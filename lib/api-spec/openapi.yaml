@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Rukn Saudi training management platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: courses
+    description: Public course catalog and enrollment
+  - name: portal
+    description: Role-aware trainee, trainer, and administrator portal
+  - name: certificates
+    description: Certificate issuance and public verification
 paths:
   /healthz:
     get:
@@ -24,7 +30,238 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /courses:
+    get:
+      operationId: listCourses
+      tags: [courses]
+      summary: List courses in the public catalog
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: format
+          in: query
+          schema: { type: string, enum: [inPerson, online, hybrid] }
+      responses:
+        "200":
+          description: Available courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Course" }
+    post:
+      operationId: createCourse
+      tags: [courses]
+      summary: Create a training course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CourseInput" }
+      responses:
+        "201":
+          description: Course created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Course" }
+        "401": { description: Authentication required }
+        "403": { description: Trainer or administrator access required }
+  /courses/{id}:
+    get:
+      operationId: getCourse
+      tags: [courses]
+      summary: Get course details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Course details
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Course" }
+        "404": { description: Course not found }
+    patch:
+      operationId: updateCourse
+      tags: [courses]
+      summary: Update a training course
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CourseUpdate" }
+      responses:
+        "200":
+          description: Updated course
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Course" }
+        "401": { description: Authentication required }
+        "403": { description: Trainer or administrator access required }
+        "404": { description: Course not found }
+    delete:
+      operationId: deleteCourse
+      tags: [courses]
+      summary: Remove a training course
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204": { description: Course deleted }
+        "401": { description: Authentication required }
+        "403": { description: Administrator access required }
+        "404": { description: Course not found }
+  /courses/{id}/enroll:
+    post:
+      operationId: enrollInCourse
+      tags: [courses]
+      summary: Enroll the signed-in trainee in a course
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "201":
+          description: Enrollment created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Enrollment" }
+        "401": { description: Authentication required }
+        "409": { description: Already enrolled or course is full }
+        "402": { description: Payment is required before enrollment }
+  /portal/me:
+    get:
+      operationId: getMyPortal
+      tags: [portal]
+      summary: Get the signed-in user's portal profile and overview
+      responses:
+        "200":
+          description: Portal overview
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PortalOverview" }
+        "401": { description: Authentication required }
+  /portal/enrollments:
+    get:
+      operationId: listMyEnrollments
+      tags: [portal]
+      summary: List courses assigned to the signed-in trainee
+      responses:
+        "200":
+          description: Enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Enrollment" }
+        "401": { description: Authentication required }
+  /portal/enrollments/{id}:
+    patch:
+      operationId: updateMyEnrollmentProgress
+      tags: [portal]
+      summary: Save progress in one of the signed-in trainee's courses
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EnrollmentProgressInput" }
+      responses:
+        "200":
+          description: Updated enrollment progress
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Enrollment" }
+        "401": { description: Authentication required }
+        "404": { description: Enrollment not found }
+  /portal/managed-enrollments:
+    get:
+      operationId: listManagedEnrollments
+      tags: [portal]
+      summary: List enrollments for the signed-in trainer or administrator
+      responses:
+        "200":
+          description: Learner progress awaiting review
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ManagedEnrollment" }
+        "401": { description: Authentication required }
+        "403": { description: Trainer or administrator access required }
+  /certificates/issue:
+    post:
+      operationId: issueCertificate
+      tags: [certificates]
+      summary: Issue a certificate for a completed enrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CertificateInput" }
+      responses:
+        "201":
+          description: Certificate issued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Certificate" }
+        "401": { description: Authentication required }
+        "403": { description: Trainer or administrator access required }
+        "409": { description: Enrollment is incomplete or certificate exists }
+  /certificates/mine:
+    get:
+      operationId: listMyCertificates
+      tags: [certificates]
+      summary: List the signed-in trainee's certificates
+      responses:
+        "200":
+          description: Certificates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Certificate" }
+        "401": { description: Authentication required }
+  /certificates/verify/{certificateNumber}:
+    get:
+      operationId: verifyCertificate
+      tags: [certificates]
+      summary: Verify a certificate publicly
+      parameters:
+        - name: certificateNumber
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Certificate verification result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CertificateVerification" }
+        "404": { description: Certificate not found }
+  /portal/company:
+    get:
+      operationId: getCompanyPortal
+      tags: [portal]
+      summary: Get the signed-in company's training overview
+      responses:
+        "200":
+          description: Company training overview
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CompanyOverview" }
+        "401": { description: Authentication required }
+        "403": { description: Company access required }
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +270,146 @@ components:
           type: string
       required:
         - status
+    Course:
+      type: object
+      required: [id, title, summary, description, category, format, level, price, durationHours, studentsCount, instructorName, imageUrl, seats, startDate, isFeatured]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        summary: { type: string }
+        description: { type: string }
+        category: { type: string }
+        format: { type: string, enum: [inPerson, online, hybrid] }
+        level: { type: string, enum: [beginner, intermediate, advanced] }
+        price: { type: number }
+        durationHours: { type: integer }
+        studentsCount: { type: integer }
+        rating: { type: ["number", "null"] }
+        instructorName: { type: string }
+        imageUrl: { type: string }
+        tvtcApprovalNumber: { type: ["string", "null"] }
+        seats: { type: integer }
+        startDate: { type: string, format: date }
+        isFeatured: { type: boolean }
+    CourseInput:
+      type: object
+      required: [title, summary, description, category, format, level, price, durationHours, instructorName, seats, startDate]
+      properties:
+        title: { type: string, minLength: 3 }
+        summary: { type: string, minLength: 10 }
+        description: { type: string, minLength: 10 }
+        category: { type: string, minLength: 2 }
+        format: { type: string, enum: [inPerson, online, hybrid] }
+        level: { type: string, enum: [beginner, intermediate, advanced] }
+        price: { type: number, minimum: 0 }
+        durationHours: { type: integer, minimum: 1 }
+        instructorName: { type: string, minLength: 2 }
+        imageUrl: { type: string }
+        tvtcApprovalNumber: { type: ["string", "null"] }
+        seats: { type: integer, minimum: 1 }
+        startDate: { type: string, format: date }
+        isFeatured: { type: boolean }
+    CourseUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 3 }
+        summary: { type: string, minLength: 10 }
+        description: { type: string, minLength: 10 }
+        category: { type: string, minLength: 2 }
+        format: { type: string, enum: [inPerson, online, hybrid] }
+        level: { type: string, enum: [beginner, intermediate, advanced] }
+        price: { type: number, minimum: 0 }
+        durationHours: { type: integer, minimum: 1 }
+        instructorName: { type: string, minLength: 2 }
+        imageUrl: { type: string }
+        tvtcApprovalNumber: { type: ["string", "null"] }
+        seats: { type: integer, minimum: 1 }
+        startDate: { type: string, format: date }
+        isFeatured: { type: boolean }
+    Enrollment:
+      type: object
+      required: [id, courseId, courseTitle, status, progressPercentage, durationHours, instructorName]
+      properties:
+        id: { type: string, format: uuid }
+        courseId: { type: string, format: uuid }
+        courseTitle: { type: string }
+        status: { type: string, enum: [active, completed, cancelled] }
+        progressPercentage: { type: integer, minimum: 0, maximum: 100 }
+        durationHours: { type: integer }
+        instructorName: { type: string }
+        nextSession: { type: ["string", "null"], format: date-time }
+    PortalOverview:
+      type: object
+      required: [userName, role, activeCourses, completedCourses, certificates, hoursLearned]
+      properties:
+        userName: { type: string }
+        role: { type: string, enum: [admin, trainer, trainee, company] }
+        activeCourses: { type: integer }
+        completedCourses: { type: integer }
+        certificates: { type: integer }
+        hoursLearned: { type: integer }
+    CertificateInput:
+      type: object
+      required: [enrollmentId]
+      properties:
+        enrollmentId: { type: string, format: uuid }
+    EnrollmentProgressInput:
+      type: object
+      required: [progressPercentage]
+      properties:
+        progressPercentage: { type: integer, minimum: 0, maximum: 100 }
+    ManagedEnrollment:
+      type: object
+      required: [id, courseId, courseTitle, traineeName, status, progressPercentage, durationHours, instructorName, hasCertificate]
+      properties:
+        id: { type: string, format: uuid }
+        courseId: { type: string, format: uuid }
+        courseTitle: { type: string }
+        traineeName: { type: string }
+        status: { type: string, enum: [active, completed, cancelled] }
+        progressPercentage: { type: integer, minimum: 0, maximum: 100 }
+        durationHours: { type: integer }
+        instructorName: { type: string }
+        hasCertificate: { type: boolean }
+    Certificate:
+      type: object
+      required: [id, certificateNumber, courseTitle, traineeName, durationHours, issuedAt, verificationUrl]
+      properties:
+        id: { type: string, format: uuid }
+        certificateNumber: { type: string }
+        courseTitle: { type: string }
+        traineeName: { type: string }
+        durationHours: { type: integer }
+        tvtcApprovalNumber: { type: ["string", "null"] }
+        issuedAt: { type: string, format: date-time }
+        verificationUrl: { type: string }
+    CertificateVerification:
+      type: object
+      required: [valid, certificateNumber, traineeName, courseTitle, durationHours, issuedAt]
+      properties:
+        valid: { type: boolean }
+        certificateNumber: { type: string }
+        traineeName: { type: string }
+        courseTitle: { type: string }
+        durationHours: { type: integer }
+        tvtcApprovalNumber: { type: ["string", "null"] }
+        issuedAt: { type: string, format: date-time }
+    CompanyOverview:
+      type: object
+      required: [companyName, employeeCount, activeEnrollments, completionRate, enrollments]
+      properties:
+        companyName: { type: string }
+        employeeCount: { type: integer }
+        activeEnrollments: { type: integer }
+        completionRate: { type: number }
+        enrollments:
+          type: array
+          items:
+            type: object
+            required: [courseTitle, traineeName, progressPercentage, status]
+            properties:
+              courseTitle: { type: string }
+              traineeName: { type: string }
+              progressPercentage: { type: integer }
+              status: { type: string, enum: [active, completed, cancelled] }
 
