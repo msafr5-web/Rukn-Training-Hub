@@ -1,0 +1,11 @@
+{
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @workspace/health-question-bank run build",
+  "outputDirectory": "artifacts/health-question-bank/dist/public",
+  "rewrites": [
+    {
+      "source": "/sign-in",
+      "destination": "/index.html"
+    }
+  ]
+}
