@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "بنك المعرفة الصحية"
+description = "تطبيق عربي للتدرب على أسئلة التوعية والاشتراطات الصحية عبر ستة قطاعات، مع البحث والتصنيف والشرح والإشارات المرجعية واختبارات تدريبية."
+version = "1.0.0"
+id = "artifacts/health-question-bank"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25520
+
+[services.development]
+run = "pnpm --filter @workspace/health-question-bank run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/health-question-bank", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/health-question-bank/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25520"
+BASE_PATH = "/"

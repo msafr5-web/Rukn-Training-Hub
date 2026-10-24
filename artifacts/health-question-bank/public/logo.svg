@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="بنك المعرفة الصحية">
+  <rect width="64" height="64" rx="18" fill="#1b5149"/>
+  <path d="M16 18.5c5.8-2.4 11.1-1.8 16 1.5v27c-4.9-3.3-10.2-3.9-16-1.5z" fill="#f8f3e7"/>
+  <path d="M48 18.5c-5.8-2.4-11.1-1.8-16 1.5v27c4.9-3.3 10.2-3.9 16-1.5z" fill="#dcebe2"/>
+  <path d="M32 20v27" fill="none" stroke="#df926d" stroke-linecap="round" stroke-width="3"/>
+  <path d="M24 31h16M32 23v16" fill="none" stroke="#1b5149" stroke-linecap="round" stroke-width="2.4"/>
+</svg>

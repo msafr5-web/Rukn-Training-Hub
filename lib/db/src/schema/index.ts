@@ -17,7 +17,4 @@
 //   export type InsertPost = z.infer<typeof insertPostSchema>;
 //   export type Post = typeof postsTable.$inferSelect;
 
-export * from "./rukn-users";
-export * from "./rukn-courses";
-export * from "./rukn-enrollments";
-export * from "./rukn-certificates";
+export * from "./user-state";

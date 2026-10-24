@@ -1,11 +1,10 @@
-# Rukn Training Platform
+# [Project name]
 
-Rukn is an Arabic-first Saudi training management platform for learners, trainers, administrators, and corporate teams to discover courses, manage learning progress, and verify certificates. The requested public brand/domain is `www.rukn.my`; DNS and custom-domain setup are separate from the app.
+_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm --filter @workspace/rukn-lms run dev` — run the Rukn web app
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -23,30 +22,23 @@ Rukn is an Arabic-first Saudi training management platform for learners, trainer
 
 ## Where things live
 
-- `artifacts/rukn-lms` — Arabic RTL public website, course catalog, learner/trainer/admin portals, company progress view, and certificate verification.
-- `lib/api-spec/openapi.yaml` — source of truth for the API contract.
-- `artifacts/api-server/src/routes/` — course, enrollment, portal, and certificate endpoints.
-- `lib/db/src/schema/` — PostgreSQL schema for Rukn users, courses, enrollments, and certificates.
+_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
 
 ## Architecture decisions
 
-- Clerk manages sign-in; the app does not store passwords locally.
-- New Clerk users are provisioned as trainees. Trainer, admin, and company roles need trusted assignment before those portals can be used.
-- Paid-course enrollment is blocked until a payment provider is connected; free-course enrollment is available.
-- Certificate records can be verified within Rukn. TVTC/NELC, Nafath, ZATCA, and live-class providers are not connected, so the app must not present records as official approvals.
+_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
 
 ## Product
 
-Visitors can browse and filter Saudi training programs, view course details, and create an account. Signed-in learners can enroll in free programs, track progress, and view certificates; trainers/admins can manage programs and review completions; company users can view team progress.
+_Describe the high-level user-facing capabilities of this app once they exist._
 
 ## User preferences
 
-- Use Arabic RTL interfaces with a coordinated, distinctive palette and responsive interactive pages.
+_Populate as you build — explicit user instructions worth remembering across sessions._
 
 ## Gotchas
 
-- Paid courses must never enroll without successful payment; return a payment-required response until checkout is implemented.
-- Do not claim Saudi regulatory integrations or official accreditation until the corresponding providers and credentials are connected and verified.
+_Populate as you build — sharp edges, "always run X before Y" rules._
 
 ## Pointers
 
